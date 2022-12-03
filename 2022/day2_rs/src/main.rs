@@ -1,5 +1,7 @@
+use std::fs::File;
+use std::io::BufRead;
 use std::path::Path;
-use std::{env, fs};
+use std::{env, io};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum Move {
@@ -41,25 +43,27 @@ impl Move {
 fn main() {
     let args = env::args().collect::<Vec<String>>();
     let file_path = Path::new(&args[1]);
-    let sum = fs::read_to_string(file_path)
-        .unwrap()
-        .trim()
-        .split('\n')
-        .map(|f| {
-            let mut chars = f.chars();
-            let enemy = Move::from_char(chars.next().unwrap()).unwrap();
-            chars.next();
-            let me = Move::from_char(chars.next().unwrap()).unwrap();
+    let file = File::open(file_path).unwrap();
+    let sum = io::BufReader::new(file)
+        .lines()
+        .map(|f| f.unwrap())
+        .filter_map(|f| {
+            let mut chars = f.trim().chars();
+            let enemy = Move::from_char(chars.next()?).unwrap();
+            chars.next()?;
+            let me = Move::from_char(chars.next()?).unwrap();
 
-            (match me.cmp(enemy) {
-                Outcome::Win => 6,
-                Outcome::Loss => 0,
-                Outcome::Draw => 3,
-            }) + (match me {
-                Move::Rock => 1,
-                Move::Paper => 2,
-                Move::Scissors => 3,
-            })
+            Some(
+                (match me.cmp(enemy) {
+                    Outcome::Win => 6,
+                    Outcome::Loss => 0,
+                    Outcome::Draw => 3,
+                }) + (match me {
+                    Move::Rock => 1,
+                    Move::Paper => 2,
+                    Move::Scissors => 3,
+                }),
+            )
         })
         .sum::<i32>();
 
