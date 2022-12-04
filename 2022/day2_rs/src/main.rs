@@ -5,16 +5,16 @@ use std::{env, io};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum Move {
-    Rock,
-    Paper,
-    Scissors,
+    Rock = 1,
+    Paper = 2,
+    Scissors = 3,
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum Outcome {
-    Win,
-    Loss,
-    Draw,
+    Win = 6,
+    Loss = 0,
+    Draw = 3,
 }
 
 impl Move {
@@ -53,17 +53,7 @@ fn main() {
             chars.next()?;
             let me = Move::from_char(chars.next()?).unwrap();
 
-            Some(
-                (match me.cmp(enemy) {
-                    Outcome::Win => 6,
-                    Outcome::Loss => 0,
-                    Outcome::Draw => 3,
-                }) + (match me {
-                    Move::Rock => 1,
-                    Move::Paper => 2,
-                    Move::Scissors => 3,
-                }),
-            )
+            Some(me.cmp(enemy) as i32 + me as i32)
         })
         .sum::<i32>();
 
